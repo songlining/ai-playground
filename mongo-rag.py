@@ -1,13 +1,6 @@
 from pymongo import MongoClient
-#from transformers import BertTokenizer, BertModel
-#import torch
 import openai
 import os
-#import numpy as np
-from sentence_transformers import SentenceTransformer
-# Load the embedding model (https://huggingface.co/nomic-ai/nomic-embed-text-v1")
-model = SentenceTransformer("nomic-ai/nomic-embed-text-v1", trust_remote_code=True)
-    
 
 mongo_url = os.getenv("MONGO_URL")
 openai.api_key = os.getenv("OPENAI_API_KEY")
@@ -21,39 +14,8 @@ movies_collection = db["embedded_movies"]
 def get_embedding(data):
     """Generates vector embeddings for the given data."""
     embedding = openai.embeddings.create(input=data, model="text-embedding-ada-002").data[0].embedding
-    #embedding = model.encode(data)
-    #l = embedding.tolist()
-    print("Len of embedding list >>>>>>>>>>>>>>>>>>>>>>>>> ", len(embedding))
     return embedding
 
-# tokenizer = BertTokenizer.from_pretrained("bert-base-uncased")
-# model = BertModel.from_pretrained("bert-base-uncased")
-
-# def generate_and_store_embeddings():
-#     count = 1
-#     for movie in movies_collection.find({"embedding": {"$exists": False}}):
-#         print(f"Processing movie #{count}: {movie.get("title")}")
-#         plot_text = movie.get("fullplot") or movie.get("plot")
-#         if plot_text:
-#              embedding = openai.embeddings.create(input=plot_text, model="text-embedding-ada-002").data[0].embedding
-#              movies_collection.update_one({"_id": movie["_id"]}, {"$set": {"embedding": embedding}})
-#              print("Embedded.")
-#         count = count + 1
-
-
-# def find_similar_movies(query_text, top_n=3):
-#     query_embedding = openai.embeddings.create(input=query_text, model="text-embedding-ada-002").data[0].embedding
-#     all_movies = movies_collection.find({"plot_embedding": {"$exists": True}})
-
-#     similarities = []
-#     for movie in all_movies:
-#         movie_embedding = np.array(movie["plot_embedding"])
-#         similarity = np.dot(query_embedding, movie_embedding) / (np.linalg.norm(query_embedding) * np.linalg.norm(movie_embedding))
-#         similarities.append((movie, similarity))
-    
-#     # Sort by similarity score and return the top N movies
-#     similarities.sort(key=lambda x: x[1], reverse=True)
-#     return [movie for movie, _ in similarities[:top_n]]
 
 # Define a function to run vector search queries
 def get_query_results(query):
@@ -100,9 +62,6 @@ def generate_response_with_rag(query_text):
 
 
 #main
-
-# generate_and_store_embeddings()
-
 query = "Can you recommend movies like The Great Train Robbery"
 response = generate_response_with_rag(query)
 print("Generated Response", response)
